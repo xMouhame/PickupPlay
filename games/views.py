@@ -165,7 +165,6 @@ def game_detail(request, code):
     if game.is_past:
         return render(request, "games/game_closed.html", {"game": game})
 
-    # page announcements (inside game page, optional)
     announcements = Announcement.objects.filter(is_active=True).order_by("-created_at")
 
     if request.method == "POST":
@@ -277,7 +276,9 @@ def dashboard(request):
             messages.error(request, "Please fix the errors in the game form.")
 
     now = timezone.now()
-    upcoming_games = Game.objects.filter(start_time__gte=now).order_by("start_time")
+
+    # ✅ FIX: show games that haven't ENDED yet (more reliable than start_time)
+    upcoming_games = Game.objects.filter(end_time__gte=now).order_by("start_time")
 
     pending_regs = (
         Registration.objects.filter(status=Registration.Status.PENDING)
@@ -285,7 +286,6 @@ def dashboard(request):
         .order_by("created_at")
     )
 
-    # ✅ News list for offcanvas Manage News panel
     news_list = Announcement.objects.order_by("-created_at")[:20]
 
     context = {
@@ -294,6 +294,7 @@ def dashboard(request):
         "pending_regs": pending_regs,
         "recent_activity": _recent_activity(),
         "news_list": news_list,
+        "now": now,
     }
     return render(request, "games/dashboard.html", context)
 
