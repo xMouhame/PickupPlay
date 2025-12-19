@@ -1,0 +1,23 @@
+{% extends "games/base.html" %}
+{% block title %}Cancel • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h2 class="fw-bold mb-2">Cancel Registration</h2>
+        <p class="text-white-75 mb-4">
+          Are you sure you want to cancel your spot for <b>{{ game.title }}</b>?
+        </p>
+
+        <form method="post" class="d-flex gap-2">
+          {% csrf_token %}
+          <button class="btn btn-danger btn-lg" type="submit">Yes, Cancel</button>
+          <a class="btn btn-outline-light btn-soft btn-lg" href="{% url 'games:player_portal_manage' game.access_code %}">No, go back</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

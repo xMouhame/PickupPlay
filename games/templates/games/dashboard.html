@@ -1,0 +1,169 @@
+{% extends "games/base.html" %}
+{% block title %}Organizer Dashboard • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <div class="col-lg-7">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h3 class="fw-bold mb-2">Create a Game</h3>
+        <p class="text-white-75 mb-4">A 5-digit code auto-generates when you create the game.</p>
+
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="create_game">
+
+          {{ game_form.title.label_tag }} {{ game_form.title }}
+          {{ game_form.location.label_tag }} {{ game_form.location }}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-white-75">Start time</label>
+              {{ game_form.start_time }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-white-75">End time</label>
+              {{ game_form.end_time }}
+            </div>
+          </div>
+
+          {{ game_form.capacity.label_tag }} {{ game_form.capacity }}
+
+          <button class="btn btn-brand btn-lg mt-2" type="submit">Create Game</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card glass-card shadow-lg mt-4">
+      <div class="card-body p-4 p-md-5">
+        <h3 class="fw-bold mb-2">Pending Requests</h3>
+        <p class="text-white-75 mb-4">Approve = confirmed/waitlist automatically.</p>
+
+        {% if pending_regs %}
+          <div class="table-responsive">
+            <table class="table table-dark table-borderless align-middle">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Game</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for r in pending_regs %}
+                <tr>
+                  <td>
+                    <div class="fw-bold">{{ r.name }}</div>
+                    <div class="small text-white-50">{{ r.email }} • {{ r.phone }}</div>
+                  </td>
+                  <td>
+                    <div class="fw-bold">{{ r.game.title }}</div>
+                    <div class="small text-white-50">
+                      {{ r.game.start_time|date:"D M j, g:i A" }} • {{ r.game.location }}
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-success" href="{% url 'games:approve_registration' r.id %}">Approve</a>
+                    <a class="btn btn-sm btn-danger" href="{% url 'games:deny_registration' r.id %}">Deny</a>
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-white-50">No pending requests.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card glass-card shadow-lg mt-4">
+      <div class="card-body p-4 p-md-5">
+        <h3 class="fw-bold mb-2">Post Announcement</h3>
+        <p class="text-white-75 mb-4">Announcements show to players on game pages.</p>
+
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="create_announcement">
+
+          {{ announcement_form.title.label_tag }} {{ announcement_form.title }}
+
+          <label class="form-label text-white-75">Message</label>
+          {{ announcement_form.message }}
+
+          <div class="form-check mt-2">
+            {{ announcement_form.is_active }}
+            <label class="form-check-label text-white-75">Active (visible)</label>
+          </div>
+
+          <button class="btn btn-brand btn-lg mt-2" type="submit">Post Announcement</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h3 class="fw-bold mb-2">Upcoming Games</h3>
+        <p class="text-white-75 mb-4">Click a game to manage players.</p>
+
+        {% if upcoming_games %}
+          <div class="vstack gap-2">
+            {% for g in upcoming_games %}
+              <div class="announce-item">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                  <div>
+                    <a class="fw-bold text-white text-decoration-none"
+                       href="{% url 'games:manage_game' g.id %}">
+                      {{ g.title }} • {{ g.location }}
+                    </a>
+                    <div class="text-white-50 small">
+                      {{ g.start_time|date:"D M j, g:i A" }} – {{ g.end_time|date:"g:i A" }}
+                    </div>
+                    <div class="small text-white-50">
+                      Code: <span class="fw-bold text-white">{{ g.access_code }}</span>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:edit_game' g.id %}">Edit</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'games:delete_game' g.id %}">Delete</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-white-50">No upcoming games.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card glass-card shadow-lg mt-4">
+      <div class="card-body p-4 p-md-5">
+        <h3 class="fw-bold mb-2">Notifications</h3>
+        <p class="text-white-75 mb-3">Latest activity</p>
+
+        {% if recent_activity %}
+          <div class="vstack gap-2">
+            {% for a in recent_activity %}
+              <div class="announce-item">
+                <div class="small text-white-50">{{ a.created_at|date:"D g:i A" }}</div>
+                <div class="fw-bold">{{ a.kind }}</div>
+                <div class="text-white-75">{{ a.message }}</div>
+                <div class="small text-white-50">Game: {{ a.game.title }} ({{ a.game.access_code }})</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-white-50">No activity yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

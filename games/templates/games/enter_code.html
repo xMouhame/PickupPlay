@@ -1,0 +1,64 @@
+{% extends "games/base.html" %}
+{% block title %}Enter Code • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="hero-card p-4 p-md-5 shadow-lg">
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div>
+          <h1 class="display-6 fw-bold mb-2">Join this week’s game</h1>
+          <p class="text-white-75 mb-0">
+            Enter the <b>5-digit code</b> Christian sent you to view the game and request a spot.
+          </p>
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Fast signup
+        </div>
+      </div>
+
+      <hr class="hr-soft my-4">
+
+      <form method="post" class="row g-3 align-items-center">
+        {% csrf_token %}
+
+        <div class="col-12">
+          <label class="form-label text-white-75">Game Code</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text input-icon">#</span>
+            <input id="codeInput" type="text" name="code" maxlength="5"
+                   inputmode="numeric" class="form-control code-input"
+                   placeholder="e.g. 04219" required>
+            <button class="btn btn-brand" type="submit">View Game</button>
+          </div>
+          <div class="form-text text-white-50 mt-2">
+            Tip: paste the code and it’ll auto-format.
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="info-row">
+            <div class="info-item">
+              <div class="info-title">Approval</div>
+              <div class="info-text">Admin approves players</div>
+            </div>
+            <div class="info-item">
+              <div class="info-title">Capacity</div>
+              <div class="info-text">Max 18 confirmed</div>
+            </div>
+            <div class="info-item">
+              <div class="info-title">Waitlist</div>
+              <div class="info-text">Auto moves up on cancel</div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-4 text-center text-white-50 small">
+      Don’t have a code? Ask Christian for the game code.
+    </div>
+  </div>
+</div>
+{% endblock %}

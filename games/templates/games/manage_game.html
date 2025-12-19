@@ -1,0 +1,102 @@
+{% extends "games/base.html" %}
+{% block title %}Manage Game • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="card glass-card shadow-lg mb-4">
+  <div class="card-body p-4 p-md-5">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+      <div>
+        <h2 class="fw-bold mb-1">{{ game.title }}</h2>
+        <div class="text-white-50">{{ game.location }} • {{ game.start_time|date:"D M j, g:i A" }} – {{ game.end_time|date:"g:i A" }}</div>
+        <div class="text-white-50">Code: <span class="fw-bold text-white">{{ game.access_code }}</span> • Capacity: {{ game.capacity }}</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-light btn-soft" href="{% url 'games:dashboard' %}">Back</a>
+        <a class="btn btn-outline-light btn-soft" href="{% url 'games:edit_game' game.id %}">Edit</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4">
+        <h4 class="fw-bold mb-3">Confirmed</h4>
+        {% if confirmed %}
+          <div class="vstack gap-2">
+            {% for r in confirmed %}
+              <div class="announce-item">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <div class="fw-bold">#{{ r.position }} — {{ r.name }}</div>
+                    <div class="small text-white-50">{{ r.email }} • {{ r.phone }}</div>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:organizer_move_player' game.id r.id 'WAITLIST' %}">Waitlist</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'games:organizer_remove_player' game.id r.id %}">Remove</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-white-50">No confirmed players.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4">
+        <h4 class="fw-bold mb-3">Waitlist</h4>
+        {% if waitlist %}
+          <div class="vstack gap-2">
+            {% for r in waitlist %}
+              <div class="announce-item">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <div class="fw-bold">#{{ r.position }} — {{ r.name }}</div>
+                    <div class="small text-white-50">{{ r.email }} • {{ r.phone }}</div>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:organizer_move_player' game.id r.id 'CONFIRMED' %}">Confirm</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'games:organizer_remove_player' game.id r.id %}">Remove</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-white-50">No waitlist.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4">
+        <h4 class="fw-bold mb-3">Pending</h4>
+        {% if pending %}
+          <div class="vstack gap-2">
+            {% for r in pending %}
+              <div class="announce-item">
+                <div class="fw-bold">{{ r.name }}</div>
+                <div class="small text-white-50">{{ r.email }} • {{ r.phone }}</div>
+                <div class="d-flex gap-2 mt-2">
+                  <a class="btn btn-sm btn-success" href="{% url 'games:approve_registration' r.id %}">Approve</a>
+                  <a class="btn btn-sm btn-danger" href="{% url 'games:deny_registration' r.id %}">Deny</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-white-50">No pending requests.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}PickupPlay{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'games/css/styles.css' %}">
+  <script defer src="{% static 'games/js/app.js' %}"></script>
+</head>
+
+<body class="site-bg">
+
+<nav class="navbar navbar-expand-lg navbar-dark px-3 px-lg-4 py-3 top-nav">
+  <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'games:enter_code' %}">
+    <span class="brand-dot"></span>
+    <span class="fw-bold">PickupPlay</span>
+  </a>
+
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:enter_code' %}">Enter code • Join game</a>
+
+    {% if request.session.is_organizer %}
+      <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:dashboard' %}">Dashboard</a>
+
+      <!-- Manage News -->
+      <button class="btn btn-sm btn-outline-warning btn-soft"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#newsOffcanvas"
+              aria-controls="newsOffcanvas">
+        Manage News
+      </button>
+
+      <!-- Notifications -->
+      <button class="btn btn-sm btn-outline-info btn-soft"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#notifyOffcanvas"
+              aria-controls="notifyOffcanvas">
+        Notifications
+      </button>
+
+      <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:organizer_logout' %}">Logout</a>
+    {% else %}
+      <a class="btn btn-sm btn-outline-light btn-soft" href="{% url 'games:organizer_login' %}">Organizer Login</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ✅ NEWS BAR (shows on every page) -->
+{% if site_news %}
+<div class="container mt-3">
+  <div class="news-bar glass-card">
+    <div class="news-badge">NEWS</div>
+    <div class="news-items" id="newsTicker">
+      {% for n in site_news %}
+        <div class="news-item">
+          <span class="news-title">{{ n.title }}</span>
+          <span class="news-dot">•</span>
+          <span class="news-text">{{ n.message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<main class="container py-4 py-lg-5">
+  {% if messages %}
+    <div class="vstack gap-2 mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} glass-alert mb-0" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ✅ Offcanvas: Notifications -->
+{% if request.session.is_organizer %}
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="notifyOffcanvas" aria-labelledby="notifyOffcanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="notifyOffcanvasLabel">Notifications</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    {% if recent_activity %}
+      <div class="vstack gap-2">
+        {% for a in recent_activity %}
+          <div class="announce-item">
+            <div class="small text-white-50">{{ a.created_at|date:"D g:i A" }}</div>
+            <div class="fw-bold">{{ a.kind }}</div>
+            <div class="text-white-75">{{ a.message }}</div>
+            <div class="small text-white-50">Game: {{ a.game.title }} ({{ a.game.access_code }})</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-white-50">No activity yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ✅ Offcanvas: Manage News (create/edit/delete without a new page) -->
+{% if request.session.is_organizer %}
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="newsOffcanvas" aria-labelledby="newsOffcanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="newsOffcanvasLabel">Manage News</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <!-- Create / Update form -->
+    <div class="card glass-card mb-3">
+      <div class="card-body">
+        <div class="fw-bold mb-2">Post / Edit News</div>
+
+        <form method="post" action="{% url 'games:news_save' %}" class="vstack gap-2">
+          {% csrf_token %}
+
+          <!-- if editing, JS will fill this -->
+          <input type="hidden" name="news_id" id="news_id" value="">
+
+          <input class="form-control form-control-sm" name="title" id="news_title" placeholder="Title (ex: Weather Update)" required>
+          <textarea class="form-control form-control-sm" name="message" id="news_message" rows="3" placeholder="Message..." required></textarea>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="1" id="news_active" name="is_active" checked>
+            <label class="form-check-label" for="news_active">
+              Active (shows to everyone)
+            </label>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-warning" type="submit">Save</button>
+            <button class="btn btn-sm btn-outline-light btn-soft" type="button" onclick="resetNewsForm()">New post</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Existing news list -->
+    <div class="fw-bold mb-2">Current News</div>
+    {% if news_list %}
+      <div class="vstack gap-2">
+        {% for n in news_list %}
+          <div class="announce-item">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <div class="fw-bold">{{ n.title }}</div>
+                <div class="text-white-75 small">{{ n.message }}</div>
+                <div class="small text-white-50 mt-1">
+                  {% if n.is_active %}✅ Active{% else %}⛔ Hidden{% endif %}
+                  • {{ n.created_at|date:"M j, g:i A" }}
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-info btn-soft"
+                        type="button"
+                        onclick="fillNewsForm('{{ n.id }}', `{{ n.title|escapejs }}`, `{{ n.message|escapejs }}`, '{{ n.is_active|yesno:"1,0" }}')">
+                  Edit
+                </button>
+
+                <form method="post" action="{% url 'games:news_delete' n.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger btn-soft" type="submit">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-white-50">No news posts yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  function fillNewsForm(id, title, message, active) {
+    document.getElementById("news_id").value = id;
+    document.getElementById("news_title").value = title;
+    document.getElementById("news_message").value = message;
+    document.getElementById("news_active").checked = (active === "1");
+  }
+
+  function resetNewsForm() {
+    document.getElementById("news_id").value = "";
+    document.getElementById("news_title").value = "";
+    document.getElementById("news_message").value = "";
+    document.getElementById("news_active").checked = true;
+  }
+</script>
+
+</body>
+</html>

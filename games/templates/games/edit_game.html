@@ -1,0 +1,41 @@
+{% extends "games/base.html" %}
+{% block title %}Edit Game • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h2 class="fw-bold mb-2">Edit Game</h2>
+        <p class="text-white-75 mb-4">Update game details. Code stays the same.</p>
+
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+
+          {{ form.title.label_tag }} {{ form.title }}
+          {{ form.location.label_tag }} {{ form.location }}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-white-75">Start time</label>
+              {{ form.start_time }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-white-75">End time</label>
+              {{ form.end_time }}
+            </div>
+          </div>
+
+          {{ form.capacity.label_tag }} {{ form.capacity }}
+
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-brand btn-lg" type="submit">Save</button>
+            <a class="btn btn-outline-light btn-soft btn-lg" href="{% url 'games:dashboard' %}">Cancel</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

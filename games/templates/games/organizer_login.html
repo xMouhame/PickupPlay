@@ -1,0 +1,34 @@
+{% extends "games/base.html" %}
+{% block title %}Organizer Login • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h2 class="fw-bold mb-2">Organizer Login</h2>
+        <p class="text-white-75 mb-4">Enter the organizer code to access the dashboard.</p>
+
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+
+          <div>
+            <label class="form-label text-white-75">Organizer Code</label>
+            <input class="form-control form-control-lg input-glass"
+                   type="password" name="code"
+                   placeholder="Enter code" required>
+          </div>
+
+          <button class="btn btn-brand btn-lg mt-2" type="submit">
+            Enter Dashboard
+          </button>
+
+          <div class="small text-white-50">
+            Players should go back and enter the game code.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

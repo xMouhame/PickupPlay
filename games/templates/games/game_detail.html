@@ -1,0 +1,209 @@
+{% extends "games/base.html" %}
+
+{% block title %}Game • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  {# =========================
+     LEFT COLUMN: GAME INFO
+     ========================= #}
+  <div class="col-lg-7">
+
+    {# Top actions #}
+    <div class="d-flex justify-content-end">
+      <a class="btn btn-outline-light btn-soft"
+         href="{% url 'games:player_portal_login' game.access_code %}">
+        Manage my spot
+      </a>
+    </div>
+
+    {# Game header card #}
+    <div class="card glass-card shadow-lg mt-3">
+      <div class="card-body p-4 p-md-5">
+
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+          {# Title + meta #}
+          <div>
+            <h2 class="fw-bold mb-1">{{ game.title }}</h2>
+            <div class="text-white-75">
+              <span class="me-2">📍 <b>{{ game.location }}</b></span>
+              <span class="me-2">•</span>
+              <span>
+                🕒 <b>{{ game.start_time|date:"D, M j • g:i A" }}</b> –
+                <b>{{ game.end_time|date:"g:i A" }}</b>
+              </span>
+            </div>
+          </div>
+
+          {# Access code #}
+          <div class="code-pill">
+            <span class="text-white-50 small">Code</span>
+            <div class="d-flex align-items-center gap-2">
+              <span id="codeText" class="fw-bold">{{ game.access_code }}</span>
+              <button type="button"
+                      class="btn btn-sm btn-outline-light btn-soft"
+                      onclick="copyCode()">
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <hr class="hr-soft my-4">
+
+        {# Stats #}
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="stat-box">
+              <div class="stat-label">Confirmed</div>
+              <div class="stat-value">{{ confirmed|length }} / {{ game.capacity }}</div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="stat-box">
+              <div class="stat-label">Waitlist</div>
+              <div class="stat-value">{{ waitlist|length }}</div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="stat-box">
+              <div class="stat-label">Pending</div>
+              <div class="stat-value">{{ pending_count }}</div>
+            </div>
+          </div>
+        </div>
+
+        {# Announcements #}
+        <div class="mt-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <h5 class="fw-bold mb-2">Announcements</h5>
+            <span id="countdown" class="badge text-bg-dark badge-soft"></span>
+          </div>
+
+          {% if announcements %}
+            <div class="vstack gap-2">
+              {% for a in announcements %}
+                <div class="announce-item">
+                  <div class="announce-title">{{ a.title }}</div>
+                  <div class="announce-text">{{ a.message }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-white-50">No announcements right now.</div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    {# Lists card #}
+    <div class="card glass-card shadow-sm mt-4">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">Current lists</h6>
+
+        <div class="row g-3">
+
+          {# Confirmed list #}
+          <div class="col-md-6">
+            <div class="list-box">
+              <div class="list-title">Confirmed players</div>
+
+              {% if confirmed %}
+                <ol class="list-clean">
+                  {% for r in confirmed %}
+                    <li class="list-item">{{ r.name }}</li>
+                  {% endfor %}
+                </ol>
+              {% else %}
+                <div class="text-white-50 small">Nobody confirmed yet.</div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Waitlist #}
+          <div class="col-md-6">
+            <div class="list-box">
+              <div class="list-title">Waitlist</div>
+
+              {% if waitlist %}
+                <ol class="list-clean">
+                  {% for r in waitlist %}
+                    <li class="list-item">{{ r.name }}</li>
+                  {% endfor %}
+                </ol>
+              {% else %}
+                <div class="text-white-50 small">Waitlist is empty.</div>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# =========================
+     RIGHT COLUMN: REGISTER
+     ========================= #}
+  <div class="col-lg-5">
+    <div class="card glass-card shadow-lg sticky-lg-top" style="top: 92px;">
+      <div class="card-body p-4 p-md-5">
+        <h4 class="fw-bold mb-2">Request a spot</h4>
+
+        <p class="text-white-75 mb-4">
+          Fill this out. Christian will approve you. If the game is full, you’ll be put on the waitlist.
+        </p>
+
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+
+          <div>
+            <label class="form-label text-white-75">Full name</label>
+            <input type="text"
+                   name="name"
+                   class="form-control form-control-lg input-glass"
+                   placeholder="Your name"
+                   required>
+          </div>
+
+          <div>
+            <label class="form-label text-white-75">Email</label>
+            <input type="email"
+                   name="email"
+                   class="form-control form-control-lg input-glass"
+                   placeholder="name@email.com"
+                   required>
+          </div>
+
+          <div>
+            <label class="form-label text-white-75">Phone</label>
+            <input type="text"
+                   name="phone"
+                   class="form-control form-control-lg input-glass"
+                   placeholder="(555) 555-5555"
+                   required>
+          </div>
+
+          <button class="btn btn-brand btn-lg mt-2" type="submit">
+            Join waitlist
+          </button>
+
+          <div class="small text-white-50 mt-2">
+            By registering, you agree to show up on time and follow the rules.
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# Pass game time to JS for countdown #}
+<input type="hidden" id="gameStartIso" value="{{ game.start_time|date:'c' }}">
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "games/base.html" %}
+{% block title %}Delete Game • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h2 class="fw-bold mb-2">Delete Game</h2>
+        <p class="text-white-75 mb-4">
+          Are you sure you want to delete:
+          <span class="fw-bold text-white">{{ game.title }}</span>?
+        </p>
+
+        <div class="text-white-50 mb-4">
+          {{ game.start_time|date:"D M j, g:i A" }} • {{ game.location }} • Code: {{ game.access_code }}
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <button class="btn btn-danger btn-lg" type="submit">Yes, Delete</button>
+            <a class="btn btn-outline-light btn-soft btn-lg" href="{% url 'games:dashboard' %}">Cancel</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

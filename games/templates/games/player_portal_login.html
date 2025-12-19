@@ -1,0 +1,41 @@
+{% extends "games/base.html" %}
+{% block title %}Manage My Spot • PickupPlay{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card glass-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <h2 class="fw-bold mb-2">Manage My Spot</h2>
+        <div class="text-white-50 mb-4">
+          Game: <span class="fw-bold text-white">{{ game.title }}</span> ({{ game.access_code }})
+        </div>
+
+        <p class="text-white-75 mb-4">
+          Login using your <b>email</b> and your <b>phone number digits only</b> as the password.
+          Example password: 4145551234
+        </p>
+
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+          <div>
+            <label class="form-label text-white-75">Email</label>
+            <input class="form-control form-control-lg input-glass" name="email" type="email" required>
+          </div>
+
+          <div>
+            <label class="form-label text-white-75">Password (phone digits)</label>
+            <input class="form-control form-control-lg input-glass" name="password" type="password" required>
+          </div>
+
+          <button class="btn btn-brand btn-lg" type="submit">Login</button>
+        </form>
+
+        <div class="mt-4">
+          <a class="text-white-50" href="{% url 'games:game_detail' game.access_code %}">Back to game</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
