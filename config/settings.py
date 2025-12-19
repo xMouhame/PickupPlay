@@ -11,24 +11,37 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# =========================
+# Security / Environment
+# =========================
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n+=2n51un7fxsuw5a5-(xft7_hmd-e^=a15674u-=o52&@%1rk'
+# Use environment variables on Render. Locally it falls back to dev values.
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Render should set DEBUG=False. Locally you can set DEBUG=True in env if needed.
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+# Comma-separated: "pickupplay.onrender.com,localhost,127.0.0.1"
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# Must be full URLs, comma-separated:
+# "https://pickupplay.onrender.com,https://www.yourdomain.com"
+CSRF_TRUSTED_ORIGINS = (
+    os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if os.environ.get("CSRF_TRUSTED_ORIGINS")
+    else []
+)
 
 
+# =========================
 # Application definition
+# =========================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,11 +51,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'games',
-
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ static files on Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,8 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'games.context_processors.global_news',
-
+                'games.context_processors.global_news',  # ✅ News bar on every page
             ],
         },
     },
@@ -74,8 +86,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+# =========================
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+# =========================
 
 DATABASES = {
     'default': {
@@ -85,46 +98,52 @@ DATABASES = {
 }
 
 
+# =========================
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+# =========================
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
+# =========================
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
+# =========================
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# If you want US Central later: "America/Chicago"
+TIME_ZONE = os.environ.get("TIME_ZONE", "UTC")
 
 USE_I18N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+# =========================
+# Static files (CSS, JS, Images)
+# =========================
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# WhiteNoise storage (compressed + cache-busted)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
+# =========================
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+# =========================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Organizer secret code (change later in Render env vars)
-ORGANIZER_CODE = "11thchristian$"
+
+# =========================
+# App Settings
+# =========================
+
+# Organizer secret code from environment for production safety
+ORGANIZER_CODE = os.environ.get("ORGANIZER_CODE", "dev-organizer-code")
